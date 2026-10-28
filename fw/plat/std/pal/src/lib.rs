@@ -77,4 +77,5 @@ pub use io::HsmIoRequest;
 pub use io::StdHsmIo;
 pub use pal::StdHsmPal;
 pub use part::PartCommand;
+pub use part::PartIdentity;
 use tsra_fw_hsm_pal_traits::*;

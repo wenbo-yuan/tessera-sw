@@ -19,6 +19,8 @@ use tsra_ddi_interface::DevInfo;
 
 use crate::dev::DdiNixDev;
 
+const DEVICE_PATH_PATTERN: &str = "/dev/azihsm*";
+
 /// DDI Implementation - TSRA Linux Device Interface
 #[derive(Default)]
 pub struct DdiNix {}
@@ -131,7 +133,7 @@ impl Ddi for DdiNix {
     fn dev_info_list(&self) -> Vec<DevInfo> {
         let mut devs = Vec::new();
 
-        if let Ok(devices) = glob("/dev/tsra*") {
+        if let Ok(devices) = glob(DEVICE_PATH_PATTERN) {
             for device in devices.flatten() {
                 if let Some(path) = device.to_str() {
                     let path = String::from(path);
@@ -169,5 +171,22 @@ impl Ddi for DdiNix {
     /// * `DdiError` - Error encountered while opening the device
     fn open_dev(&self, path: &str) -> DdiResult<Self::Dev> {
         DdiNixDev::open(path)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use glob::Pattern;
+
+    use super::DEVICE_PATH_PATTERN;
+
+    #[test]
+    fn device_pattern_matches_azihsm_nodes() -> Result<(), glob::PatternError> {
+        let pattern = Pattern::new(DEVICE_PATH_PATTERN)?;
+        assert!(pattern.matches("/dev/azihsm0"));
+        assert!(pattern.matches("/dev/azihsm123"));
+        assert!(!pattern.matches("/dev/tsra0"));
+        assert!(!pattern.matches("/dev/tessera0"));
+        Ok(())
     }
 }
